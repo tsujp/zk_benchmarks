@@ -62,10 +62,9 @@ COPY "$HARNESS_LOC"/bootstrap /home/"$USERNAME"/bin
 RUN /home/"$USERNAME"/bin/bootstrap
 # COPY aztec /home/"$USERNAME"/bin
 
-ARG VERSION
-ARG USERNAME
 FROM benchy-aztec-fedora:$VERSION
 
+ARG USERNAME
 USER $USERNAME
 WORKDIR /home/$USERNAME
 
@@ -91,6 +90,5 @@ WORKDIR /home/$USERNAME
 # podman top -l capeff
 # podman top -l user uid huser group hgroups
 
-
-# COPY ./harness/install/poop /tmp/install-poop
-# RUN /tmp/install-poop
+COPY ./harness/install/poop /tmp/install-poop
+RUN /tmp/install-poop

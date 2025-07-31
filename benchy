@@ -139,7 +139,11 @@ benchy_make ()
 
 benchy_run ()
 {
-    echo 'BENCHY RUN'
+    list_enabled
+
+    for i in "${!enabled[@]}"; do
+        call run_container  "${enabled[$i]}"
+    done
 }
 
 

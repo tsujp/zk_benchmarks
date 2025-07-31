@@ -65,6 +65,7 @@ RUN /home/"$USERNAME"/bin/bootstrap
 FROM benchy-aztec-fedora:$VERSION
 
 ARG USERNAME
+ARG HARNESS_LOC
 USER $USERNAME
 WORKDIR /home/$USERNAME
 

@@ -24,16 +24,16 @@ pushd "$(pwd)" 1> /dev/null
 pushd "$BENCHY_LOC" 1> /dev/null
 
 # So we can image ourselves later save variable and function definition state before (later we'll diff against this to export the appropriate things).
-readonly __BENCHY_VARS_BEFORE="$(declare -p | awk '$3 !~ /__BENCHY/ { gsub(/=.*$/, "", $3); print $3; }')"
-readonly __BENCHY_FUNS_BEFORE="$(declare -pF | awk '{ print $3; }')"
+readonly __BENCHY_VARS_BEFORE="$(declare -p | awk '$3 !~ /__BENCHY/ { gsub(/=.*$/, "", $3); print $3; }' | grep -v '^$' | sort)"
+readonly __BENCHY_FUNS_BEFORE="$(declare -pF | awk '{ print $3; }' | grep -v '^$' | sort)"
 
 # Because we're going to source a bunch of files which are relative to us and it's easier if we just cd instead of prefixing every possible path.
 source 'harness/stdlib.sh'
 source 'harness/fixture.sh'
 source 'harness/container.sh'
 
-readonly __BENCHY_VARS_AFTER="$(declare -p | awk '$3 !~ /__BENCHY/ { gsub(/=.*$/, "", $3); print $3; }')"
-readonly __BENCHY_FUNS_AFTER="$(declare -pF | awk '{ print $3; }')"
+readonly __BENCHY_VARS_AFTER="$(declare -p | awk '$3 !~ /__BENCHY/ { gsub(/=.*$/, "", $3); print $3; }' | grep -v '^$' | sort)"
+readonly __BENCHY_FUNS_AFTER="$(declare -pF | awk '{ print $3; }' | grep -v '^$' | sort)"
 
 readonly __BENCHY_VARS_IMAGE="$(comm -13 <(printf '%s\n' "$__BENCHY_VARS_BEFORE") <(printf '%s\n' "$__BENCHY_VARS_AFTER"))"
 readonly __BENCHY_FUNS_IMAGE="$(comm -13 <(printf '%s\n' "$__BENCHY_FUNS_BEFORE") <(printf '%s\n' "$__BENCHY_FUNS_AFTER"))"
@@ -111,7 +111,7 @@ if [[ "${TRACE-0}" == "1" ]]; then
 fi
 
 EOF
-    
+
     # Dump variables.
     while IFS= read -r bvar; do
         declare -p "$bvar" >> "$fixture_context"

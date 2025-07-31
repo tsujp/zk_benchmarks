@@ -6,5 +6,7 @@ set -euo pipefail
 
 sudo dnf install \
      podman \
-     bash
+     bash \
+     bc \
+     awk
      

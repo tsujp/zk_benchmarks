@@ -20,6 +20,7 @@ RUN dnf update -y && dnf install -y \
 	just \
     jq \
     bash \
+    bsdtar \
 	\
 	&& dnf clean all
 

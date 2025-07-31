@@ -50,7 +50,7 @@ install ()
     git clone https://github.com/andrewrk/poop.git && cd poop
     git checkout e283827410e2caf751ce8f38d2ff5c217e1ce4cd
     printf 'Installing poop\n'
-    /home/"$USERNAME"/bin/zig build --color=off
+    /home/"$USERNAME"/bin/zig build --color off
     mv ./zig-out/bin/poop /home/"$USERNAME"/bin
     printf 'Installed poop: %s\n' "$(/home/"$USERNAME"/bin/poop)"
 }

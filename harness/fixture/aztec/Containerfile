@@ -61,7 +61,6 @@ WORKDIR /home/$USERNAME
 COPY "$HARNESS_LOC"/benchy_aztec_imaged.sh /home/"$USERNAME"/benchy_imaged.sh
 COPY "$HARNESS_LOC"/bootstrap /home/"$USERNAME"/bin
 RUN /home/"$USERNAME"/bin/bootstrap
-# COPY aztec /home/"$USERNAME"/bin
 
 FROM benchy-aztec-fedora:$VERSION
 
@@ -74,15 +73,13 @@ WORKDIR /home/$USERNAME
 # cd aztec-packages/noir-projects/noir-protocol-circuits/crates/private-kernel-inner
 # /home/jammy/poop/zig-out/bin/poop 'nargo execute'
 
-# Install Noir.
-# RUN curl -L https://raw.githubusercontent.com/noir-lang/noirup/main/install | bash; \
-#     source ~/.bashrc; \
-#     noirup
+COPY "$HARNESS_LOC"/aztec /home/"$USERNAME"/bin
 
-# Install Barretenberg.
-# RUN curl -L https://raw.githubusercontent.com/AztecProtocol/aztec-packages/refs/heads/master/barretenberg/bbup/install | bash; \
-#     source ~/.bashrc; \
-#     bbup
+# We'll just clone it all for now, do a sparse checkout later.
+RUN git clone https://github.com/noir-lang/noir.git
+
+COPY ./harness/install/poop /tmp/install-poop
+RUN sudo /tmp/install-poop && sudo chown "$USERNAME":"$USERNAME" /home/"$USERNAME"/bin
 
 # CMD ["/bin/bash", "-l"]
 
@@ -90,6 +87,3 @@ WORKDIR /home/$USERNAME
 # ls -la@
 # podman top -l capeff
 # podman top -l user uid huser group hgroups
-
-COPY ./harness/install/poop /tmp/install-poop
-RUN /tmp/install-poop

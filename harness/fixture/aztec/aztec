@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+source "$HOME"/benchy_imaged.sh
+
 # XXX: Every fixture definition must have functions:
 #   - prepare
 #   - warmup

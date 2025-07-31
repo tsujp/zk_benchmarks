@@ -1,0 +1,196 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+set -o nounset
+shopt -s lastpipe
+
+if [[ "${TRACE-0}" == "1" ]]; then
+    set -o xtrace
+fi
+
+
+# If this script is executed via a symlink SYM_SCRIPTNAME is the symlink's name.
+readonly SYM_SCRIPTNAME="${0##*/}"
+
+# Whereas this is the real terminal file-name of the current script.
+readonly REAL_SCRIPTNAME="$(realpath "${BASH_SOURCE:-0}";)"
+
+# Where the real scriptname (us) is located.
+readonly BENCHY_LOC="$(dirname -- "$REAL_SCRIPTNAME")"
+
+# Save where we are and make sure we're at Benchy's location.
+# printf 'benchy at: %s\n' "$BENCHY_LOC"
+pushd "$(pwd)" 1> /dev/null
+pushd "$BENCHY_LOC" 1> /dev/null
+
+# So we can image ourselves later save variable and function definition state before (later we'll diff against this to export the appropriate things).
+readonly __BENCHY_VARS_BEFORE="$(declare -p | awk '$3 !~ /__BENCHY/ { gsub(/=.*$/, "", $3); print $3; }')"
+readonly __BENCHY_FUNS_BEFORE="$(declare -pF | awk '{ print $3; }')"
+
+# Because we're going to source a bunch of files which are relative to us and it's easier if we just cd instead of prefixing every possible path.
+source 'harness/stdlib.sh'
+source 'harness/fixture.sh'
+source 'harness/container.sh'
+
+readonly __BENCHY_VARS_AFTER="$(declare -p | awk '$3 !~ /__BENCHY/ { gsub(/=.*$/, "", $3); print $3; }')"
+readonly __BENCHY_FUNS_AFTER="$(declare -pF | awk '{ print $3; }')"
+
+readonly __BENCHY_VARS_IMAGE="$(comm -13 <(printf '%s\n' "$__BENCHY_VARS_BEFORE") <(printf '%s\n' "$__BENCHY_VARS_AFTER"))"
+readonly __BENCHY_FUNS_IMAGE="$(comm -13 <(printf '%s\n' "$__BENCHY_FUNS_BEFORE") <(printf '%s\n' "$__BENCHY_FUNS_AFTER"))"
+
+
+usage ()
+{
+    printf '%s' "\
+Benchy -- a test harness to benchmark all the ZK stacks!
+
+DESCRIPTION
+    Benchy will execute pre-defined fixtures and record various metrics like
+    wall (real) execution time, peak memory usage, and other perf_event_open(2)
+    metrics. Additional properties like witness, and proof sizes are recorded.
+
+"
+
+    if [[ "$invoked_as" == 'make' ]]; then
+        printf '%s' "\
+SYNOPSIS
+    make
+"
+    else
+        printf '%s' "\
+SYNOPSIS
+    ./$invoked_as
+    ./$invoked_as [OPTIONS] [COMMAND]
+
+    The default command when none are provided is: run
+
+COMMANDS
+    make                  build containers for benchmarking
+    run                   start benchmarking
+
+OPTIONS
+    -h, --help            print this help message
+    -v, --version         print Benchy version number (semver)
+
+NOTE
+    Benchy can be called via the provided GNU-flavoured Make Makefile
+    however it accepts absolutely no options in that case; i.e. the only
+    valid command is \`make\`.
+"
+    fi
+}
+
+
+version ()
+{
+    printf '%s' "\
+Benchy (ZK Benchmarks) 0.1.0
+"
+  exit 0
+}
+
+
+# Pretend we're some kind of lisp and image ourself (Benchy) into the container with only the fixtures to be run.
+benchy_image ()
+{
+    alert 'Imaging Benchy for:' " $1"
+
+    declare -r fixture_context="harness/fixture/${1}/benchy_${1}_imaged.sh"
+    # > "$fixture_context"
+
+    # TODO: Get these from current shell, as right now gotta keep them in-sync.
+    tee "$fixture_context" <<EOF > /dev/null
+#!/usr/bin/env bash
+
+set -euo pipefail
+set -o nounset
+shopt -s lastpipe
+
+if [[ "${TRACE-0}" == "1" ]]; then
+    set -o xtrace
+fi
+
+EOF
+    
+    # Dump variables.
+    while IFS= read -r bvar; do
+        declare -p "$bvar" >> "$fixture_context"
+    done <<< "$__BENCHY_VARS_IMAGE"
+
+    # Dump functions.
+    while IFS= read -r bfun; do
+        declare -f "$bfun" >> "$fixture_context"
+    done <<< "$__BENCHY_FUNS_IMAGE"
+}
+
+
+benchy_make ()
+{
+    alert 'Fixtures to build:'
+    list_enabled
+
+    # XXX: Yes, for now we'll do it serially. YSH/Zig split it up over N cores and build as much in parallel as possible.
+    for i in "${!enabled[@]}"; do
+        call benchy_image "${enabled[$i]}"
+        call make_container  "${enabled[$i]}"
+    done
+}
+
+
+benchy_run ()
+{
+    echo 'BENCHY RUN'
+}
+
+
+main ()
+{
+    if [[ "$(ps -co comm= "$PPID")" == 'make' ]]; then
+        invoked_as='make'
+    else
+        invoked_as="${0##*/}"
+    fi
+
+    # No arguments = run benchmarks.
+    [[ "$#" -eq 0 ]] && {
+        alert 'Defaulting to command:' ' run'
+        call benchy_run
+    }
+
+    # All options are mutually exclusive so this is fine.
+    [[ "$#" -gt 1 ]] && {
+        die 'Too many options, pass only `-h` or `--help` for usage.'
+    }
+
+    # Ditto above.
+    case "$1" in
+        make)
+            call benchy_make
+            ;;
+
+        run)
+            call benchy_run
+            ;;
+
+        -v|--version)
+            version
+            exit 0
+            ;;
+
+        -h|--help)
+            usage
+            exit 0
+            ;;
+
+        *)
+            error "Invalid option: " "$1"
+            printf '\n'
+            usage
+            exit 1
+            ;;
+    esac
+}
+
+main "$@"
+
+popd

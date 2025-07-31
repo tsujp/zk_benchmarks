@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+set -o nounset
+shopt -s lastpipe
+
+if [[ "${TRACE-0}" == "1" ]]; then
+    set -o xtrace
+fi
+
+get_arch ()
+{
+    # Expand this list when YSH/Zig. For now only x86_64 linux and M-series macs.
+    
+    declare -r _arch="$(uname -m)"
+    declare -r _os="$(uname -s)"
+
+    # Arch and OS.
+    declare -a _target=('UNKNOWN' 'UNKNOWN')
+
+    case "$_os" in
+        Linux)
+            _target[0]="$_arch"
+            _target[1]='linux'
+            ;;
+        Darwin)
+            _target[0]='aarch64'
+            _target[1]='macos'
+            ;;
+    esac
+
+    printf '%s-%s\n' "${_target[@]}"
+}
+
+install ()
+{
+    declare -r target_arch="$(get_arch)"
+
+    declare -r zig_url="https://ziglang.org/download/0.14.1/zig-${target_arch}-0.14.1.tar.xz"
+    printf 'Downloading Zig: %s\n' "$zig_url"
+
+    # Install Zig.
+    curl -fsSLO "$zig_url"
+    tar -xf "zig-${target_arch}-0.14.1.tar.xz" -C /home/"$USERNAME"/bin --strip-components=1
+    printf 'Installed Zig: %s\n' "$(/home/"$USERNAME"/bin/zig version)"
+
+    # Install poop.
+    printf 'Downloading poop\n'
+    cd /tmp
+    git clone https://github.com/andrewrk/poop.git && cd poop
+    git checkout e283827410e2caf751ce8f38d2ff5c217e1ce4cd
+    printf 'Installing poop\n'
+    /home/"$USERNAME"/bin/zig build --color=off
+    mv ./zig-out/bin/poop /home/"$USERNAME"/bin
+    printf 'Installed poop: %s\n' "$(/home/"$USERNAME"/bin/poop)"
+}
+
+install

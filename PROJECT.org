@@ -2,3 +2,122 @@
 # ------------------------------------------------------
 #+TITLE: Project Planning: zk_benchmarks
 #+LANGUAGE: en
+
+* Host
+
+Host setup
+
+cpu and cpuset changes
+
+Check current with: cat "/sys/fs/cgroup/user.slice/user-$(id -u).slice/user@$(id -u).service/cgroup.controllers"
+
+Create file at: /etc/systemd/system/user@.service.d/delegate.conf
+
+With contents:
+[Service]
+Delegate=memory pids cpu cpuset
+
+Then: sudo systemctl daemon-reload
+
+* Metrics
+
+- Execution time/memory to...
+  - Create a witness.
+  - Create a proof.
+  - Verify a proof.
+- Witness properties (size?).
+- Proof properties (size?).
+- Circuit size (gate count).
+
+* Aztec
+
+- Noir to execute circuit via ACVM, that execution trace forms the witness value.
+- Default backend Barretenberg for proving and verifying.
+
+#+caption: Easy boostrap (for now)
+#+begin_src sh
+# Barretenberg
+curl -L https://raw.githubusercontent.com/AztecProtocol/aztec-packages/refs/heads/master/barretenberg/bbup/install | bash
+source ~/.bashrc
+bbup
+#+end_src
+
+** Witness
+
+=--force= to remove any caching (by forcing full recompilation).
+
+#+caption: Execute circuit
+#+begin_src sh
+nargo execute --silence-warnings --force
+#+end_src
+
+After executing a circuit with Nargo by default the witness is gzip compressed at =target= with the same name as the Nargo.toml package name.
+
+#+caption: Get witness size
+#+begin_src sh
+stat --format '%n %s' target/private_kernel_inner.gz
+
+# Size while gzip compressed
+gzip --force --decompress target/*.gz
+
+# Size uncompressed
+stat --format '%n %s' target/private_kernel_inner
+#+end_src
+
+** Gates
+
+After circuit execution
+
+#+caption: Get gates for a circuit
+#+begin_src sh
+bb gates --bytecode_path target/private_kernel_inner.json 
+#+end_src
+
+** Proving
+
+How can I pre-download the CRS so that's not included in the benchmark time? Granted it is only once but still.
+
+Run =bb write_vk= beforehand to create the verification key so it's not part of the benchmark.
+
+#+caption: Create verification key
+#+begin_src sh
+bb write_vk --bytecode_path target/private_kernel_inner.json
+#+end_src
+
+#+caption: Prove a circuit
+#+begin_src sh
+bb prove --write_vk --bytecode_path target/private_kernel_inner.json --witness_path target/private_kernel_inner
+
+#+end_src
+
+After proof, get the size of the proof artefact.
+
+#+caption: Get proof size
+#+begin_src sh
+stat --format '%n %s' out/proof
+#+end_src
+
+** Verifying
+
+#+caption: Verify a circuit
+#+begin_src sh
+bb verify --vk_path out/vk --proof_path out/proof --public_inputs_path out/public_inputs
+#+end_src
+
+* Implementation
+
+Ruby would be nice as a scaffold but being that the shell isn't a primitive (same as basically every other non-shell programming language) it adds friction to running shell commands.
+
+For now Bash is fine, but YSH might be nicer and reduce the usual Bash mental overhead when writing fault-tolerant shell scripts.
+
+** TODO Rewrite the harness into YSH
+
+In Bash for proof of concept. YSH looks like a good long-term given it's a shell language and we primarily need to do a lot of shell /stuff/.
+
+*** TODO Provision machine manually
+
+No ansible, no chef, nothing amazingly complicated is required here.
+
+*** TODO Podman with libkrun
+
+macOS side already handled, how Podman must be configured to use libkrun elsewhere is distro-specific.

@@ -70,7 +70,7 @@ After circuit execution
 
 #+caption: Get gates for a circuit
 #+begin_src sh
-bb gates --bytecode_path target/private_kernel_inner.json 
+bb gates --bytecode_path target/private_kernel_inner.json
 #+end_src
 
 ** Proving

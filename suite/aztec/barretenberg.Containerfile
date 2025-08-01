@@ -30,6 +30,7 @@ RUN dnf update -y && dnf install -y \
     jq \
     bash \
     bsdtar \
+    bc \
 	\
 	&& dnf clean all
 
@@ -91,18 +92,7 @@ WORKDIR /home/$USERNAME
 
 RUN ./benchmark bootstrap
 
-# Install aztec packages (circuit benchmark targets).
-# RUN git clone https://github.com/AztecProtocol/aztec-packages.git
-# cd aztec-packages/noir-projects/noir-protocol-circuits/crates/private-kernel-inner
-# /home/jammy/poop/zig-out/bin/poop 'nargo execute'
-
-# We'll just clone it all for now, do a sparse checkout later.
-# RUN git clone https://github.com/noir-lang/noir.git
-
-# COPY ./harness/install/poop /tmp/install-poop
-# RUN sudo /tmp/install-poop && sudo chown "$USERNAME":"$USERNAME" /home/"$USERNAME"/bin
-
-# CMD ["/bin/bash", "-l"]
+CMD ["./benchmark", "benchmark"]
 
 # ls -lan
 # ls -la@

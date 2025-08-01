@@ -6,6 +6,7 @@ declare -Ar __func_puts=(
     ['benchy_make']='Creating containers for all suites'
     ['make_container']='Building container'
     ['prepare']='Preparing circuit'
+    ['warmup']='Warming up'
 )
 
 

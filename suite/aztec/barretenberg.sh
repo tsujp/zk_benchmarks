@@ -41,40 +41,100 @@ prepare ()
 
 warmup ()
 {
-    puts 'Warming up benchmark fixture...'
+    printf '\033[35mWarming up for\033[0m %s' "$1"
 
-    for ((i = 0 ; i < max ; i++ )); do
-        echo "$i"
+    declare callback_measure="$1"
+
+    # 5 times, arbitrary.
+    for ((i = 0 ; i < 5 ; i++ )); do
+        "$1" "$2" &> /dev/null
+        printf ' %s..' "$i"
     done
 
-    puts '... done'
+    puts $'\033[35m done\033[0m'
 }
 
+# TODO: Better warmup mechanism than wrapping if-else.
 measure_witness ()
 {
-    echo 'hi there'
+    declare -r m_cmd='nargo execute --silence-warnings'
+    
+    if [[ "$#" -gt 1 ]]; then
+        poop --duration "$2" "${m_cmd}"
+    else
+        $m_cmd
+    fi
+}
+
+measure_witness_size ()
+{
+    stat --format '%n %s' target/"$1".gz
+}
+
+measure_circuit_gates ()
+{
+    bb gates --bytecode_path target/"$1".json    
 }
 
 measure_proving ()
 {
-    echo 'TODO: Proving'
+    # Make sure verification key already exists.
+    bb write_vk --bytecode_path target/"$1".json
+    
+    declare -r m_cmd="bb prove --bytecode_path target/${1}.json --witness_path target/${1}"
+    
+    if [[ "$#" -gt 1 ]]; then
+        poop --duration "$2" "${m_cmd}"
+    else
+        $m_cmd
+    fi
+}
+
+measure_proof_size ()
+{
+    stat --format '%n %s' out/proof
 }
 
 measure_verifying ()
 {
-    echo 'TODO: Verifying'
+    declare -r m_cmd='bb verify --vk_path out/vk --proof_path out/proof --public_inputs_path out/public_inputs'
+    
+    if [[ "$#" -gt 1 ]]; then
+        poop --duration "$2" "${m_cmd}"
+    else
+        $m_cmd
+    fi
 }
 
 benchmark ()
 {
     printf '\033[35m------------ AZTEC BENCHMARKS ------------\033[0m\n'
-    call prepare
+
+    for s in "${scenarios[@]}"; do
+        alert 'Benchmarking:' " $s"
+
+        pushd "$(pwd)" 1> /dev/null
+        pushd "scenarios/${scenario_src['context']}/${s}" 1> /dev/null
+        
+        call prepare "$s"
+
+        warmup 'measure_witness' "$s"
+        call measure_witness "$s" 10000
+
+        call measure_witness_size "$s"
+        call measure_circuit_gates "$s"
+        
+        warmup 'measure_proving' "$s"
+        call measure_proving "$s" 10000
+
+        call measure_proof_size "$s"
+
+        warmup 'measure_verifying' "$s"
+        call measure_verifying "$s" 5000
+
+        popd 1> /dev/null
+    done; unset -n s
 }
-
-# printf '\033[35m------------ AZTEC BENCHMARKS ------------\033[0m\n'
-
-# benchmark
-
 
 
 # ******************************************************************************

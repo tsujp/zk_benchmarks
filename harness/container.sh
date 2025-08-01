@@ -20,6 +20,8 @@ make_container ()
 
 run_container ()
 {
+    # TODO: Run this for 1 core, 2 cores, 4 cores. Currently only 4 cores.
+
     podman run -it -d --replace \
            --init \
            --userns keep-id \
@@ -28,7 +30,7 @@ run_container ()
 	       --name "benchy-${1}-${2}" \
            --network=host \
            --cap-add=SYS_PTRACE,CAP_PERFMON,CAP_SYS_ADMIN \
-           --cpuset-cpus=4 \
+           --cpuset-cpus=4,5,6,7 \
            --cpus=0 \
 	       localhost/benchy/"${1}-${2}"
 }

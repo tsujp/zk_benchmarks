@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
 declare -Ar __func_puts=(
+    ['benchy_image']='Imaging benchy'
     ['benchy_run']='Running benchmarks'
-    ['benchy_make']='Creating containers for all fixtures'
+    ['benchy_make']='Creating containers for all suites'
     ['make_container']='Building container'
     ['prepare']='Preparing circuit'
 )
@@ -58,9 +59,9 @@ call ()
 
     declare end_time="$EPOCHREALTIME"
 
-    printf -v duration '(in: \033[1;33m%.6f\033[0m s)' "$(bc -l <<< "$end_time - $start_time")"
+    printf -v duration '(\033[1;33m%.6f\033[0m s)' "$(bc -l <<< "$end_time - $start_time")"
 
-    puts_headline 'done:' " ${__func_puts[$f_ptr]:-$f_ptr}" " $duration"
+    puts_headline 'done' " $duration" $'\033[1;30m'"${__func_puts[$f_ptr]:-$f_ptr}"$'\033[0m'
 }
 
 kurl ()

@@ -34,6 +34,10 @@ get_arch ()
 
 install ()
 {
+    env
+    ls -la "$HOME/bin"
+    ls -la "$HOME"
+
     declare -r target_arch="$(get_arch)"
 
     declare -r zig_url="https://ziglang.org/download/0.14.1/zig-${target_arch}-0.14.1.tar.xz"

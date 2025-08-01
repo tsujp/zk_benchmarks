@@ -29,7 +29,7 @@ readonly __BENCHY_FUNS_BEFORE="$(declare -pF | awk '{ print $3; }' | grep -v '^$
 
 # Because we're going to source a bunch of files which are relative to us and it's easier if we just cd instead of prefixing every possible path.
 source 'harness/stdlib.sh'
-source 'harness/fixture.sh'
+source 'harness/suite.sh'
 source 'harness/container.sh'
 
 readonly __BENCHY_VARS_AFTER="$(declare -p | awk '$3 !~ /__BENCHY/ { gsub(/=.*$/, "", $3); print $3; }' | grep -v '^$' | sort)"
@@ -65,6 +65,7 @@ SYNOPSIS
     The default command when none are provided is: run
 
 COMMANDS
+    list                  list known benchmark suites and their scenarios
     make                  build containers for benchmarking
     run                   start benchmarking
 
@@ -95,11 +96,21 @@ benchy_image ()
 {
     alert 'Imaging Benchy for:' " $1"
 
-    declare -r fixture_context="harness/fixture/${1}/benchy_${1}_imaged.sh"
-    # > "$fixture_context"
+    declare -r context="suite/${1}/build__${2}"
+    declare -r benchy_imaged="$context/benchy_imaged.sh"
+    
+    # Temporary for building.
+    if [[ ! -d "$context" ]]; then
+        mkdir "$context"
+    fi
+
+    cp -a harness/install/* "$context"
+    cp -a "suite/${1}/${2}.sh" "$context"
+    chmod +x "$context/${2}.sh"
+    cp -a "suite/${1}/${2}.Containerfile" "$context"
 
     # TODO: Get these from current shell, as right now gotta keep them in-sync.
-    tee "$fixture_context" <<EOF > /dev/null
+    tee "$benchy_imaged" <<EOF > /dev/null
 #!/usr/bin/env bash
 
 set -euo pipefail
@@ -114,36 +125,75 @@ EOF
 
     # Dump variables.
     while IFS= read -r bvar; do
-        declare -p "$bvar" >> "$fixture_context"
+        declare -p "$bvar" >> "$benchy_imaged"
     done <<< "$__BENCHY_VARS_IMAGE"
 
     # Dump functions.
     while IFS= read -r bfun; do
-        declare -f "$bfun" >> "$fixture_context"
+        declare -f "$bfun" >> "$benchy_imaged"
     done <<< "$__BENCHY_FUNS_IMAGE"
+}
+
+
+benchy_list ()
+{
+    puts "${#suites[@]} benchmark suites found"
+    puts
+    
+    for s in "${!suites[@]}"; do
+        declare sv="${suites[$s]}"
+        declare -n sv_ptr="$sv"
+        
+        puts "    $s (${#sv_ptr[@]} defs)"
+        for sd in "${sv_ptr[@]}"; do
+            puts "      $sd"
+        done; unset sd
+        puts
+        
+        unset -n sv
+        unset -n sv_ptr
+    done; unset -n s
 }
 
 
 benchy_make ()
 {
-    alert 'Fixtures to build:'
-    list_enabled
+    alert 'Suites to build:'
+    benchy_list
+    # list_enabled
 
     # XXX: Yes, for now we'll do it serially. YSH/Zig split it up over N cores and build as much in parallel as possible.
-    for i in "${!enabled[@]}"; do
-        call benchy_image "${enabled[$i]}"
-        call make_container  "${enabled[$i]}"
-    done
+    for s in "${!suites[@]}"; do
+        declare sv="${suites[$s]}"
+        declare -n sv_ptr="$sv"
+        
+        for sd in "${sv_ptr[@]}"; do
+            benchy_image "$s" "$sd"
+            call make_container "$s" "$sd"
+        done; unset sd
+        
+        unset -n sv
+        unset -n sv_ptr
+    done; unset -n s
 }
 
 
 benchy_run ()
 {
-    list_enabled
+    alert 'Suites to run:'
+    benchy_list
 
-    for i in "${!enabled[@]}"; do
-        call run_container  "${enabled[$i]}"
-    done
+    for s in "${!suites[@]}"; do
+        declare sv="${suites[$s]}"
+        declare -n sv_ptr="$sv"
+        
+        for sd in "${sv_ptr[@]}"; do
+            call run_container "$s" "$sd"
+        done; unset sd
+        
+        unset -n sv
+        unset -n sv_ptr
+    done; unset -n s
 }
 
 
@@ -168,6 +218,10 @@ main ()
 
     # Ditto above.
     case "$1" in
+        list)
+            benchy_list
+            ;;
+
         make)
             call benchy_make
             ;;
@@ -197,4 +251,4 @@ main ()
 
 main "$@"
 
-popd
+popd 1> /dev/null

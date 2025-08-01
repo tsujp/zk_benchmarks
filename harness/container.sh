@@ -2,16 +2,19 @@
 
 make_container ()
 {
+    declare -r context="suite/${1}/build__${2}"
+    
     podman build \
            --layers \
            --cache-ttl '86400s' \
            --cap-add=SYS_PTRACE,CAP_PERFMON,CAP_SYS_ADMIN \
-           --build-arg PROJECT_NAME="benchy-${1}" \
-           --build-arg HARNESS_LOC="harness/fixture/${1}" \
-           -t localhost/benchy/"$1" \
-           -f "harness/fixture/${1}/Containerfile" \
-           "$BENCHY_LOC"
-           # "harness/fixture/${1}" 
+           --build-arg SUITE_NAME="$1" \
+           --build-arg VARIANT_NAME="$2" \
+           --tag localhost/benchy/"${1}-${2}" \
+           --file "${2}.Containerfile" \
+           "$context"
+
+    rm -rf "$context"
 }
 
 
@@ -21,11 +24,11 @@ run_container ()
            --init \
            --userns keep-id \
 	       --security-opt label=disable \
-	       --hostname "benchy-${1}" \
-	       --name "benchy-${1}" \
+	       --hostname "benchy-${1}-${2}" \
+	       --name "benchy-${1}-${2}" \
            --network=host \
            --cap-add=SYS_PTRACE,CAP_PERFMON,CAP_SYS_ADMIN \
            --cpuset-cpus=4 \
            --cpus=0 \
-	       localhost/benchy/"$1"
+	       localhost/benchy/"${1}-${2}"
 }

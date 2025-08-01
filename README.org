@@ -1,1 +1,30 @@
-#+TITLE: ZK Benchmarks
+#+TITLE: Benchy -- ZK Benchmarks
+
+Benchy is a benchmarking harness tailored for ZK circuits.
+
+After providing a (relatively) simple configuration for what you want to benchmark, Benchy will take care of the rest!
+
+** Status
+
+Benchy works but is still in it's infancy, methodology may change, and a rewrite /is/ planned (into either YSH or Zig). The [[./PROJECT.org][project planning file]] has more granular TODOs and further resources.
+
+** Suites
+
+Currently Benchy has suites for:
+
+  - Aztec's Barretenberg.
+  - Starkware's Cairo (TODO).
+
+** TODO Usage
+
+** TODO Build / Develop / Contribute
+
+*** AI / LLMs
+
+**Code generated in-part or wholly by LLMs is not allowed**. Contributions are only valuable if they can be maintained and understood. Beyond trivial constructs (which are better suited to snippet completion tools) generating code leads to a lack of understanding about what or why.
+
+Furthermore LLM companies steal others' work for profit which is antithetical to open-source and generally immoral behaviour. If you disagree with this stance please do not contribute, /it is not up for discussion in any form/.
+
+** Licence
+
+Or if you prefer: license -- can be found [[./LICENCE][here]]. It's a fairly standard BSD-3-Clause.

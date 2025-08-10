@@ -2,6 +2,15 @@
 
 make_container ()
 {
+    declare -ri fedora_version=42
+
+    podman build \
+           --layers \
+           --cache-ttl '86400s' \
+           --build-arg VERSION="$fedora_version" \
+           --tag localhost/benchy/fedora-baseline:"$fedora_version" \
+           --file 'suite/base.Containerfile'
+
     declare -r context="suite/${1}/build__${2}"
     
     podman build \

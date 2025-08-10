@@ -6,14 +6,14 @@ After providing a (relatively) simple configuration for what you want to benchma
 
 ** Status
 
-Benchy works but is still in it's infancy, methodology may change, and a rewrite /is/ planned (into either YSH or Zig). The [[./PROJECT.org][project planning file]] has more granular TODOs and further resources.
+Benchy works but is still in it's infancy, methodology may change, and a rewrite /is/ planned (likely into Ruby). The [[./PROJECT.org][project planning file]] has more granular TODOs and further resources.
 
 ** Suites
 
 Currently Benchy has suites for:
 
   - Aztec's Barretenberg.
-  - Starkware's Cairo (TODO).
+  - Starkware's Stwo.
 
 ** TODO Usage
 

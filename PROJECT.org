@@ -104,6 +104,37 @@ stat --format '%n %s' out/proof
 bb verify --vk_path out/vk --proof_path out/proof --public_inputs_path out/public_inputs
 #+end_src
 
+* Starkware
+- https://www.cairo-lang.org/resources/
+- https://www.starknet.io/cairo-book/ch01-03-proving-a-prime-number.html
+- https://docs.swmansion.com/scarb/
+- https://www.starknet.io/cairo-book/ch102-04-serialization-of-cairo-types.html
+
+- Cairo compiled down to CASM (Cairo Assembly) via cairo-compile and Sierra ([[https://www.starknet.io/cairo-book/appendix-09-sierra.html][cairo book - sierra]]).
+- CASM executed via stwo proving and verifying backend ([[https://github.com/starkware-libs/stwo][stwo]]).
+
+#+begin_src bash
+curl -LO https://github.com/starkware-libs/cairo/releases/download/v2.12.0/release-x86_64-unknown-linux-musl.tar.gz
+# cairo-compile  cairo-execute  cairo-format  cairo-run  cairo-test  sierra-compile  starknet-compile  starknet-sierra-compile
+
+curl -LO https://github.com/software-mansion/scarb/releases/download/v2.12.0/scarb-v2.12.0-x86_64-unknown-linux-gnu.tar.gz
+
+../scarb execute --arguments-file ./args.txt --print-program-output
+# might put output at target/execute/foobar/execution3
+# so to prove that execution, for execution3
+../scarb prove --execution-id 3
+# warn: soundness of proof is not yet guaranteed by Stwo, use at your own risk
+# Saving proof to: target/execute/foobar/execution3/proof/proof.json
+#+end_src
+
+** Witness
+
+** Gates
+
+** Proving
+
+** Verifying
+
 * Implementation
 
 Ruby would be nice as a scaffold but being that the shell isn't a primitive (same as basically every other non-shell programming language) it adds friction to running shell commands.
@@ -111,8 +142,13 @@ Ruby would be nice as a scaffold but being that the shell isn't a primitive (sam
 For now Bash is fine, but YSH might be nicer and reduce the usual Bash mental overhead when writing fault-tolerant shell scripts.
 
 ** TODO Rewrite the harness into YSH
+:LOGBOOK:
+- Note taken on [2025-08-10 Sun 19:57] \\
+  Tried YSH and the Python(?) runtime is a concern, plus the lack of documentation makes it hard to use. Might go with Ruby instead.
+:END:
 
-In Bash for proof of concept. YSH looks like a good long-term given it's a shell language and we primarily need to do a lot of shell /stuff/.
+In Bash for proof of concept. YSH looks like a good long-term given it's a shell language and
+we primarily need to do a lot of shell /stuff/.
 
 *** TODO Provision machine manually
 
@@ -121,3 +157,17 @@ No ansible, no chef, nothing amazingly complicated is required here.
 *** TODO Podman with libkrun
 
 macOS side already handled, how Podman must be configured to use libkrun elsewhere is distro-specific.
+
+** TODO Run tests over 1, 2, 4 cores
+
+Just need to step in the run_container function.
+
+** TODO Automatically run benchmark via Container CMD
+
+** TODO Automatically collect benchmark output
+
+Make a folder based on $(date +%s) benchy was started, and results go into there as a text file streamed from the logs of the running containers (until machine readable poop output).
+
+** TODO Starkware Stone Provier for Cairo Zero
+
+What's the scope with that? Add a suite for it? https://github.com/starkware-libs/stone-prover

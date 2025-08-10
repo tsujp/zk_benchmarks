@@ -104,10 +104,15 @@ benchy_image ()
 
     rm -rf "$context"/*
 
+    # XXX: Will conflict with downloaded scenarios, change handling with Ruby rewrite.
+    # Add pre-provided scenarios (if any).
+    if [[ -d "suite/${1}/${2}"_benchmarks ]]; then
+        cp -a "suite/${1}/${2}"_benchmarks "$context"
+    fi
+
     cp -a harness/install/* "$context"
     cp -a "suite/${1}/${2}.sh" "$context"
     chmod +x "$context/${2}.sh"
-    cp -a "suite/${1}/${2}"_benchmarks "$context"
     cp -a "suite/${1}/${2}.Containerfile" "$context"
 
     # TODO: Get these from current shell, as right now gotta keep them in-sync.

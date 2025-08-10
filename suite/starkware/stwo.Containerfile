@@ -17,8 +17,6 @@ ARG SUITE_NAME
 ARG VARIANT_NAME
 ARG BENCHY_TARGET
 
-# TODO: Can have this be part of Podman CLI to build images instead of Containerfile.
-# That way it need not be duplicated N times.
 LABEL sh.benchy.suite="$SUITE_NAME" \
       sh.benchy.variant="$VARIANT_NAME" \
 	  sh.benchy.summary="Benchy image for $BENCHY_TARGET scenarios"
@@ -44,6 +42,9 @@ ARG BENCHY_TARGET
 
 USER $USERNAME
 WORKDIR /home/$USERNAME
+
+COPY stwo_benchmarks scenarios
+RUN sudo chown -R "$USERNAME":"$USERNAME" "$HOME"
 
 RUN ./benchmark bootstrap
 

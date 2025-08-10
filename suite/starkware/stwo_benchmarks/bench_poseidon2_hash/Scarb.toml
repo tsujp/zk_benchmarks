@@ -1,0 +1,16 @@
+[package]
+name = "bench_poseidon2_hash"
+version = "0.1.0"
+edition = "2024_07"
+
+[[target.executable]]
+name = "bench_poseidon2_hash"
+function = "bench_poseidon2_hash::main::main"
+
+[cairo]
+enable-gas = false
+
+[dependencies]
+cairo_execute = "2.12.0"
+
+[dev-dependencies]

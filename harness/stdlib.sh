@@ -68,7 +68,7 @@ call ()
 kurl ()
 {
     # puts "Downloading: $1"
-    curl -fsSL "$1"
+    curl -fsSL --progress-bar "$1"
 }
 
 reload_shell ()

@@ -60,7 +60,7 @@ measure_witness ()
     declare -r m_cmd='nargo execute --silence-warnings'
     
     if [[ "$#" -gt 1 ]]; then
-        poop --duration "$2" "${m_cmd}"
+        poop --color never --duration "$2" "${m_cmd}"
     else
         $m_cmd
     fi
@@ -84,7 +84,7 @@ measure_proving ()
     declare -r m_cmd="bb prove --bytecode_path target/${1}.json --witness_path target/${1}"
     
     if [[ "$#" -gt 1 ]]; then
-        poop --duration "$2" "${m_cmd}"
+        poop --color never --duration "$2" "${m_cmd}"
     else
         $m_cmd
     fi
@@ -100,7 +100,7 @@ measure_verifying ()
     declare -r m_cmd='bb verify --vk_path out/vk --proof_path out/proof --public_inputs_path out/public_inputs'
     
     if [[ "$#" -gt 1 ]]; then
-        poop --duration "$2" "${m_cmd}"
+        poop --color never --duration "$2" "${m_cmd}"
     else
         $m_cmd
     fi
@@ -156,6 +156,8 @@ install_noir ()
     source /home/"$USERNAME"/.bashrc
 
     noirup
+
+    set -o nounset
 }
 
 # TODO: This is an Aztec problem mostly, but curling a shell script into Bash is.. not good. Deconstruct their desired installation strategy and keep it in-sync later.

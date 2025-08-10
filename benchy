@@ -62,8 +62,6 @@ SYNOPSIS
     ./$invoked_as
     ./$invoked_as [OPTIONS] [COMMAND]
 
-    The default command when none are provided is: run
-
 COMMANDS
     list                  list known benchmark suites and their scenarios
     make                  build containers for benchmarking
@@ -205,10 +203,10 @@ main ()
         invoked_as="${0##*/}"
     fi
 
-    # No arguments = run benchmarks.
+    # No arguments = print help.
     [[ "$#" -eq 0 ]] && {
-        alert 'Defaulting to command:' ' run'
-        call benchy_run
+        usage
+        exit 0
     }
 
     # All options are mutually exclusive so this is fine.

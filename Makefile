@@ -1,4 +1,4 @@
 .SILENT:
 
 no_option_run:
-	./benchy
+	./benchy run

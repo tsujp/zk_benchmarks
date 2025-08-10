@@ -34,9 +34,9 @@ get_arch ()
 
 install ()
 {
-    env
-    ls -la "$HOME/bin"
-    ls -la "$HOME"
+    # env
+    # ls -la "$HOME/bin"
+    # ls -la "$HOME"
 
     declare -r target_arch="$(get_arch)"
 
@@ -44,9 +44,12 @@ install ()
     printf 'Downloading Zig: %s\n' "$zig_url"
 
     # Install Zig.
-    curl -fsSLO "$zig_url"
+    curl -fsSLO --progress-bar "$zig_url"
     bsdtar -xf "zig-${target_arch}-0.14.1.tar.xz" -C /home/"$USERNAME"/bin --strip-components=1
     printf 'Installed Zig: %s\n' "$(/home/"$USERNAME"/bin/zig version)"
+
+    rm -f "zig-${target_arch}-0.14.1.tar.xz"
+    rm -f bin/{LICENSE,README.md}
 
     # Install poop.
     printf 'Downloading poop\n'

@@ -80,8 +80,8 @@ measure_proving ()
 {
     # Make sure verification key already exists.
     bb write_vk --bytecode_path target/"$1".json
-    
-    declare -r m_cmd="bb prove --bytecode_path target/${1}.json --witness_path target/${1}"
+
+    declare -r m_cmd="bb prove --bytecode_path target/${1}.json --witness_path target/${1}.gz --vk_path out/vk"
     
     if [[ "$#" -gt 1 ]]; then
         poop --color never --duration "$2" "${m_cmd}"

@@ -94,6 +94,8 @@ benchy_image ()
 {
     alert 'Imaging Benchy for:' " $1"
 
+    # $1 - suite name ; $2 - definition (type/folder/etc) name
+    # e.g. $1 = aztec ; $2 = barretenberg
     declare -r context="suite/${1}/build__${2}"
     declare -r benchy_imaged="$context/benchy_imaged.sh"
     

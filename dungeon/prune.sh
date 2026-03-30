@@ -59,5 +59,5 @@ readonly -a byebye=(
 
 for bb in "${byebye[@]:?}"; do
     printf 'Deleting: %s\n' "${bb:?}"
-    rm -rf "${bb:?}"
+    rm -rf circuits/"${bb:?}"
 done

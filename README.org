@@ -19,12 +19,6 @@ Currently Benchy has suites for:
 
 ** TODO Build / Develop / Contribute
 
-*** AI / LLMs
-
-**Code generated in-part or wholly by LLMs is not allowed**. Contributions are only valuable if they can be maintained and understood. Beyond trivial constructs (which are better suited to snippet completion tools) generating code leads to a lack of understanding about what or why.
-
-Furthermore LLM companies steal others' work for profit which is antithetical to open-source and generally immoral behaviour. If you disagree with this stance please do not contribute, /it is not up for discussion in any form/.
-
 ** Licence
 
 Or if you prefer: license -- can be found [[./LICENCE][here]]. It's a fairly standard BSD-3-Clause.
